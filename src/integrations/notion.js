@@ -33,7 +33,12 @@ clockifyButton.render(
     function getDescription () {
       const descriptionElem = elem.querySelector('.notion-scroller .notion-selectable div[contenteditable="true"]');
       return descriptionElem ? descriptionElem.textContent.trim() : '';
-    }
+    };
+
+    function getProject () {
+      return document.title;
+    };
+    console.log(getProject);
 
     const link = clockifyButton.createButton(getDescription);
     link.style.cursor = 'pointer';
