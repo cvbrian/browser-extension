@@ -24,6 +24,7 @@ import {LocalStorageService} from "../services/localStorage-service";
 import {getWorkspacePermissionsEnums} from "../enums/workspace-permissions.enum";
 import {getLocalStorageEnums} from "../enums/local-storage.enum";
 import {HtmlStyleHelper} from "../helpers/html-style-helper";
+import Toaster from "./toaster-component";
 
 const projectService = new ProjectService();
 const webSocketClient = new WebSocketClient();
@@ -98,7 +99,11 @@ class HomePage extends React.Component {
     getEntryFromPomodoroEvents() {
         getBrowser().runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.eventName === 'pomodoroEvent') {
-                this.start.getTimeEntryInProgress();
+                if (request.timeEntry !== null) {
+                    this.start.getTimeEntryInProgress();
+                } else {
+                    this.getTimeEntries();
+                }    
             }
         });
     }
@@ -113,7 +118,7 @@ class HomePage extends React.Component {
                 isUserOwnerOrAdmin: isUserOwnerOrAdmin
             }, () => {
                 localStorageService.set('isUserOwnerOrAdmin', isUserOwnerOrAdmin);
-                this.handleRefresh();
+                this.reloadData();
             });
         });
     }
@@ -126,7 +131,9 @@ class HomePage extends React.Component {
         if (
             timerShortcutFromStorage.length === 0 ||
             (timerShortcutFromStorage.length > 0 &&
-                timerShortcutFromStorage.filter(timerShortcut => timerShortcut.userId === userId).length === 0)
+                timerShortcutFromStorage.filter(
+                    timerShortcut => timerShortcut && timerShortcut.userId === userId).length === 0
+                )
         ) {
             timerShortcutFromStorage.push({userId: userId, enabled: true});
 
@@ -192,6 +199,7 @@ class HomePage extends React.Component {
             let timeEntries = localStorage.getItem('timeEntriesOffline') ? JSON.parse(localStorage.getItem('timeEntriesOffline')) : [];
             timeEntries.map(entry => {
                 timeEntryService.createEntry(
+                    entry.workspaceId,
                     entry.description,
                     entry.timeInterval.start,
                     entry.timeInterval.end,
@@ -212,7 +220,6 @@ class HomePage extends React.Component {
             localStorage.setItem('timeEntryInOffline', null);
         }
     }
-
 
     handleBackButton() {
         if (!document.getElementById('description')) {
@@ -260,7 +267,6 @@ class HomePage extends React.Component {
                             ready: true
                         });
                     });
-                    this.getAllProjects();
                 })
                 .catch((error) => {
                 });
@@ -395,7 +401,6 @@ class HomePage extends React.Component {
                             })
                         }
                     });
-                    this.getAllProjects();
                 })
                 .catch(() => {
                 });
@@ -449,8 +454,8 @@ class HomePage extends React.Component {
                     description: timeEntry.description,
                     timeInterval: {start: moment()},
                     projectId: timeEntry.projectId,
-                    taskId: timeEntry.taskId,
-                    tagIds: timeEntry.tagIds,
+                    taskId: timeEntry.task ? timeEntry.task.id : null,
+                    tagIds: timeEntry.tags ? timeEntry.tags.map(tag => tag.id) : [],
                     billable: timeEntry.billable
                 };
 
@@ -470,12 +475,13 @@ class HomePage extends React.Component {
                         this.getWorkspaceSettings();
                     });
                     timeEntryService.createEntry(
+                        timeEntry.workspaceId,
                         timeEntry.description,
                         moment(),
                         null,
                         timeEntry.projectId,
-                        timeEntry.taskId,
-                        timeEntry.tagIds,
+                        timeEntry.task ? timeEntry.task.id : null,
+                        timeEntry.tags ? timeEntry.tags.map(tag => tag.id) : [],
                         timeEntry.billable
                     ).then(response => {
                         let data = response.data;
@@ -509,7 +515,7 @@ class HomePage extends React.Component {
                                 goToEdit={this.goToEdit.bind(this)}/>,
                 document.getElementById('mount')
             );
-        } else if (this.state.workspaceSettings.forceTasks && !this.state.inProgress.taskId) {
+        } else if (this.state.workspaceSettings.forceTasks && !this.state.inProgress.task) {
             ReactDOM.unmountComponentAtNode(document.getElementById('mount'));
             ReactDOM.render(
                 <RequiredFields field={"task"}
@@ -517,7 +523,7 @@ class HomePage extends React.Component {
                 document.getElementById('mount')
             );
         } else if (this.state.workspaceSettings.forceTags &&
-            (!this.state.timeEntry.tagIds || !this.state.timeEntry.tagIds.length > 0)) {
+            (!this.state.timeEntry.tags || !this.state.timeEntry.tags.length > 0)) {
             ReactDOM.unmountComponentAtNode(document.getElementById('mount'));
             ReactDOM.render(
                 <RequiredFields field={"tags"}
@@ -561,12 +567,13 @@ class HomePage extends React.Component {
                 this.start.setTimeEntryInProgress(timeEntryOffline);
             } else {
                 timeEntryService.createEntry(
+                    timeEntry.workspaceId,
                     timeEntry.description,
                     moment(),
                     null,
                     timeEntry.projectId,
-                    timeEntry.taskId,
-                    timeEntry.tagIds,
+                    timeEntry.task ? timeEntry.task.id : null,
+                    timeEntry.tags ? timeEntry.tags.map(tag => tag.id) : [],
                     timeEntry.billable
                 ).then(response => {
                     let data = response.data;
@@ -581,66 +588,17 @@ class HomePage extends React.Component {
             }
         }
     }
-
-    getAllProjects() {
-        if (this.state.timeEntries.length === 0) {
-            return;
-        }
-        projectService.getAllProjects()
-            .then(response => {
-                let projects = response.data;
-                const projectIds = projects.map(project => project.id);
-                const missingProjectIds = this.state.timeEntries
-                    .filter(entry => entry.projectId && !projectIds.includes(entry.projectId))
-                    .map(entry => entry.projectId);
-
-                this.getMissingProject(missingProjectIds).then(response => {
-                    if (response.length > 0) {
-                        projects = [...projects, ...response];
-                    }
-
-                    this.setState({
-                        projects: projects
-                    }, () => {
-                        this.getAllTasks();
-                    })
-                });
-            })
-            .catch((error) => {
-            });
-    }
-
-    getMissingProject(projectIds) {
-        if (!projectIds || projectIds.length === 0) {
-            return Promise.resolve([]);
-        } else {
-            return projectService.getProjectsByIds(projectIds).then(response => response.data);
-        }
-    }
-
-    getAllTasks() {
-        let taskIds =
-            this.state.timeEntries
-                .filter(timeEntry => timeEntry.taskId)
-                .map(timeEntry => timeEntry.taskId);
-        let uniqueIds = taskIds.filter(function (id, pos) {
-            return taskIds.indexOf(id) === pos;
-        });
-
-        projectService.getAllTasks(uniqueIds)
-            .then(response => {
-                let data = response.data;
-                this.setState({
-                    tasks: data
-                })
-            })
-            .catch((error) => {
-            });
-    }
-
+    
     handleRefresh() {
         if (!checkConnection()) {
             this.saveAllOfflineEntries();
+        }
+
+        this.reloadData()
+    }
+
+    reloadData() {
+        if (!checkConnection()) {
             this.setState({
                 pageCount: 0
             }, () => {
@@ -698,6 +656,10 @@ class HomePage extends React.Component {
         getBrowser().storage.local.set({permissions: permissionsForStorage});
     }
 
+    showMessage(message) {
+        this.toaster.toast('info', message, 2);
+    }
+
     componentWillUnmount() {
         getBrowser().runtime.onMessage.removeListener(websocketHandlerListener);
     }
@@ -706,6 +668,11 @@ class HomePage extends React.Component {
         if (!this.state.ready) {
             return null;
         } else {
+            const activeWorkspaceId = localStorageService.get('activeWorkspaceId');
+            const timeEntriesOffline = localStorage.getItem('timeEntriesOffline') 
+                ? JSON.parse(localStorage.getItem('timeEntriesOffline'))
+                    .filter(timeEntry => !timeEntry.workspaceId || timeEntry.workspaceId === activeWorkspaceId)
+                : [];
             return (
                 <div className="home_page">
                     <div className="header_and_timer">
@@ -719,10 +686,14 @@ class HomePage extends React.Component {
                                 workspaceSettings={this.state.workspaceSettings}
                                 workspaceChanged={this.handleRefresh.bind(this)}
                         />
+                        <Toaster
+                            ref={instance => {this.toaster = instance}}
+                        />
                         <StartTimer
                             ref={instance => {
                                 this.start = instance;
                             }}
+                            message={this.showMessage.bind(this)}
                             mode={this.state.mode}
                             changeMode={this.changeMode.bind(this)}
                             endStarted={this.handleRefresh.bind(this)}
@@ -740,12 +711,11 @@ class HomePage extends React.Component {
                         <img src="./assets/images/circle_2.svg" className="pull-loading-img2"/>
                     </div>
                     <div className={this.state.ready &&
-                    !JSON.parse(localStorage.getItem('offline')) &&
-                    JSON.parse(localStorage.getItem('timeEntriesOffline')) &&
-                    JSON.parse(localStorage.getItem('timeEntriesOffline')).length > 0 ?
-                        "" : "disabled"}>
+                        !JSON.parse(localStorage.getItem('offline')) &&
+                        timeEntriesOffline &&
+                        timeEntriesOffline.length > 0 ? "" : "disabled"}>
                         <TimeEntryListNotSynced
-                            timeEntries={JSON.parse(localStorage.getItem('timeEntriesOffline'))}
+                            timeEntries={timeEntriesOffline}
                             pullToRefresh={this.state.pullToRefresh}
                             handleRefresh={this.handleRefresh.bind(this)}
                             workspaceSettings={this.state.workspaceSettings}
@@ -760,8 +730,6 @@ class HomePage extends React.Component {
                         <TimeEntryList
                             timeEntries={this.state.timeEntries}
                             dates={this.state.dates}
-                            projects={this.state.projects}
-                            tasks={this.state.tasks}
                             selectTimeEntry={this.continueTimeEntry.bind(this)}
                             pullToRefresh={this.state.pullToRefresh}
                             handleRefresh={this.handleRefresh.bind(this)}

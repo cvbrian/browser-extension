@@ -1,7 +1,7 @@
 function startTimerWithDescription(info) {
     let token;
     let activeWorkspaceId;
-    aBrowser.storage.sync.get(['token', 'activeWorkspaceId'], function (result) {
+    aBrowser.storage.local.get(['token', 'activeWorkspaceId'], function (result) {
         token = result.token;
         activeWorkspaceId = result.activeWorkspaceId;
 
@@ -70,8 +70,8 @@ function startTimer(description, options) {
             description: description,
             billable: false,
             projectId: options && options.projectId ? options.projectId : null,
-            tagIds: options && options.tagIds ? options.tagIds : [],
-            taskId: options && options.taskId ? options.taskId : null
+            tagIds: options && options.tags ? options.tags.map(tag => tag.id): [],
+            taskId: options && options.task ? options.task.id : null
         })
     });
 
@@ -84,9 +84,6 @@ function startTimer(description, options) {
                     path: iconPathStarted
                 });
 
-                if (options.isWebSocketHeader) {
-                    document.timeEntry = data;
-                }
                 this.entryInProgressChangedEventHandler(data);
             }
             return data;
@@ -127,9 +124,6 @@ function deleteEntry(entryId, isWebSocketHeader) {
     });
 
     return fetch(deleteEntryRequest).then(() => {
-        if (isWebSocketHeader) {
-            document.timeEntry = null;
-        }
         this.entryInProgressChangedEventHandler(null);
     });
 
@@ -183,18 +177,13 @@ function endInProgressOnClosingBrowser() {
     }
 }
 
-aBrowser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.eventName === 'getEntryInProgress') {
-        sendResponse(document.timeEntry);
-    }
-});
-
 function saveEntryOfflineAndStopItByDeletingIt(data, end, isWebSocketHeader) {
     const timeEntry = {
+        workspaceId: data.workspaceId,
         id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
         description: data.description,
         projectId: data.projectId,
-        taskId: data.taskId,
+        taskId: data.task ? data.task.id : null,
         billabe: data.billable,
         timeInterval: {
             start: data.timeInterval.start,

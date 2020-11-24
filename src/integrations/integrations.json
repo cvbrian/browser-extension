@@ -11,24 +11,6 @@
     "script": "asana.js",
     "clone":false
   },
-  "atlassian.com": {
-    "name": "Atlassian",
-    "link": "*://*.atlassian.com/*",
-    "script": "atlassian.js",
-    "clone": false
-  },
-  "atlassian.net": {
-    "name": "Atlassian",
-    "link": "*://*.atlassian.net/*",
-    "script": "atlassian.js",
-    "clone": true
-  },
-  "custom-atlassian.com": {
-    "name": "Custom Atlassian",
-    "link": "*://*.atlassian.com/*",
-    "script": "custom-atlassian.js",
-    "clone": false
-  },
   "axosoft.com": {
     "name": "Axosoft",
     "link": "axosoft.com/",
@@ -147,12 +129,6 @@
     "name": "Google Mail",
     "link": "*://mail.google.com/*",
     "script": "google-mail.js",
-    "clone": false
-  },
-  "gqueues.com": {
-    "name": "GQueues",
-    "link": "*://*.gqueues.com/*",
-    "script": "gqueues.js",
     "clone": false
   },
   "helpscout.net": {
@@ -311,18 +287,6 @@
     "script": "redmine.js",
     "clone": false
   },
-  "rindle.com": {
-    "name": "Rindle",
-    "link": "*://*.rindle.com/*",
-    "script": "rindle.js",
-    "clone": false
-  },
-  "rollbar.com": {
-    "name": "Rollbar",
-    "link": "*://*.rollbar.com/*",
-    "script": "rollbar.js",
-    "clone": false
-  },
   "salesforce.com": {
     "name": "Salesforce",
     "link": "*://*.salesforce.com/*,*://*.my.salesforce.com/*, *://*.lightning.force.com/*",
@@ -339,18 +303,6 @@
     "name": "Scoro",
     "link": "*://*.scoro.com/*",
     "script": "scoro.js",
-    "clone": false
-  },
-  "sentry.io": {
-    "name": "Sentry",
-    "link": "*://*.sentry.io/*",
-    "script": "sentry.js",
-    "clone": false
-  },
-  "slack.com": {
-    "name": "Slack",
-    "link": "*://*.slack.com/*",
-    "script": "slack.js",
     "clone": false
   },
   "sprint.ly": {
@@ -376,12 +328,6 @@
     "link": "*://*.teamwork.com/*",
     "script": "teamwork.js",
     "clone": true
-  },
-  "company.teamwork.com": {
-    "name": "Teamwork Projects",
-    "link": "*://teamwork.*.com/*",
-    "script": "teamwork.js",
-    "clone": false
   },
   "ticktick.com": {
     "name": "TickTick",
@@ -413,16 +359,10 @@
     "script": "unfuddle.js",
     "clone": false
   },
-  "unfuddle.io": {
-    "name": "Unfuddle",
-    "link": "*://*.unfuddle.io/*",
-    "script": "unfuddle.js",
-    "clone": true
-  },
   "visualstudio.com": {
     "name": "VisualStudio",
     "link": "*://*.visualstudio.com/*",
-    "script": "visualstudio.js",
+    "script": "azure.js",
     "clone": false
   },
   "wekan.github.io": {
@@ -484,5 +424,33 @@
     "link": "*://*.intercom.com/*",
     "script": "intercom.js",
     "clone": false
+  },
+  "to-do.live.com": {
+    "name": "Microsoft To-Do",
+    "link": "*://to-do.live.com/*",
+    "script": "microsoft-todo.js",
+    "clone": false
+  },
+  "cerb.ai": {
+    "name": "Cerb",
+    "link": "*://*.cerb.ai/*",
+    "script": "cerb.js",
+    "clone": false
+  },
+  "usepixie.net": {
+    "name": "Pixie",
+    "link": "*://*.usepixie.net/*",
+    "script": "usepixie.js"
+  },
+  "figma.com": {
+    "name": "Cerb",
+    "link": "*://*.figma.com/*",
+    "script": "figma.js",
+    "clone": false
+  },
+  "freshrelease.com": {
+    "name": "Freshrelease",
+    "link": "*://*.freshrelease.com/*",
+    "script": "freshrelease.js"
   }
 }

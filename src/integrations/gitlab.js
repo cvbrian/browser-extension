@@ -9,14 +9,29 @@ clockifyButton.render('.issue-details .detail-page-description:not(.clockify)', 
         description = numElem.textContent.split(" ").pop().trim() + " " + description;
     }
 
-    link = clockifyButton.createButton(description, projectElem.textContent.trim());
+    var tags = () => Array.from($$("div.labels .gl-label-text")).map(e => e.innerText);
+
+    link = clockifyButton.createButton({
+        description: description,
+        projectName: projectElem.textContent.trim(),
+        taskName: description,
+        tagNames: tags
+    });
     link.style.marginRight = '15px';
     link.style.padding = '0px';
     link.style.paddingLeft = '20px';
     actionsElem.parentElement.insertBefore(link, actionsElem);
+
+    var inputForm = clockifyButton.createInput({
+        description: description,
+        projectName: projectElem.textContent.trim(),
+        taskName: description,
+        tagNames: tags
+    });
+    actionsElem.parentElement.insertBefore(inputForm, actionsElem);
 });
 
-clockifyButton.render('.merge-request-details .detail-page-description:not(.clockify)', {observe: true}, (elem) => {
+clockifyButton.render('.merge-request-details.issuable-details > .detail-page-description:not(.clockify)', {observe: true}, (elem) => {
     var link, description,
         numElem = $(".identifier") || $(".breadcrumbs-list li:last-child .breadcrumbs-sub-title"),
         titleElem = $(".title", elem),
@@ -29,10 +44,24 @@ clockifyButton.render('.merge-request-details .detail-page-description:not(.cloc
         description = "MR" + numElem.textContent.split(" ").pop().trim().replace("!", "") + "::" + description;
     }
 
-    link = clockifyButton.createButton(description, projectElem.textContent.trim());
+    var tags = Array.from($$("div.labels .gl-label-text")).map(e => e.innerText);
+
+    link = clockifyButton.createButton({
+        description: description,
+        projectName: projectElem.textContent.trim(),
+        taskName: description,
+        tagNames: tags
+    });
     link.style.marginRight = '15px';
     link.style.padding = '0px';
     link.style.paddingLeft = '20px';
     actionsElem.parentElement.insertBefore(link, actionsElem);
-});
 
+    var inputForm = clockifyButton.createInput({
+        description: description,
+        projectName: projectElem.textContent.trim(),
+        taskName: description,
+        tagNames: tags
+    });
+    actionsElem.parentElement.insertBefore(inputForm, actionsElem);
+});

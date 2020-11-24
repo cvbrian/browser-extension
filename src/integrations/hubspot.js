@@ -1,20 +1,17 @@
 // Inbox
 clockifyButton.render('[data-test-id="sticky-subject-header"]:not(.clockify)', { observe: true }, elem => {
-
 setTimeout(function(){ 
-
-  const container = elem.parentElement;
   const subject = document.querySelector('[data-test-id="sticky-subject-header"]').textContent;
+  const contact = document.querySelector('[data-test-id="known-contact-info-highlight"]').textContent;
   const ticketId = window.location.href.split('/')[6].replace("#reply-editor", "");
-  const contact = document.querySelector(".customer-data-sidebar--highlight .private-truncated-string__inner").textContent;
-  const description = "[#" + ticketId + "] " + subject + " (" + contact  + ")";
+  const description = "[#" + ticketId + "] " + subject + " [" + contact + "]";
 
   const link = clockifyButton.createButton(description);
   link.style.position = 'absolute';
-  link.style.right = '0px';
-  link.style.top = '45px';
+  link.style.right = '10px';
+  link.style.top = '65px';
 
-  container.appendChild(link);
+  elem.appendChild(link);
   }, 500);
 });
 

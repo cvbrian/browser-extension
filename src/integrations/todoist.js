@@ -1,135 +1,64 @@
-function getProjectNameFromLabel(elem) {
-  var projectLabel = '',
-      projectLabelEle = $('.project_item__name', elem.parentNode.parentNode);
-  if (projectLabelEle) {
-    projectLabel = projectLabelEle.textContent.trim();
-  }
-  return projectLabel;
-}
+// projects
+clockifyButton.render('.project_editor_instance [data-action-hint="task-root"]:not(.clockify)', {observe: true}, function (elem) {
+  description = $('.markdown_content.task_content', elem).textContent;
+  project = $('.view_header__content h1').textContent;
+  link = clockifyButton.createButton({
+      description: description,
+      projectName: project,
+      small: true
+  });
+  link.style.paddingRight = "10px";
+  elem.prepend(link);
+});
 
-var levelPattern = /(?:^|\s)indent_([0-9]*?)(?:\s|$)/;
-function getParentEle(sidebarCurrentEle) {
-  var curLevel, parentClass, parentCandidate;
-  curLevel = sidebarCurrentEle.className.match(levelPattern)[1];
-  parentClass = 'indent_' + (curLevel - 1);
+// // task modal
+clockifyButton.render('.detail_modal:not(.clockify)', {observe: true}, function (elem) {
+  description = $(".item_detail .task_content").innerText;
+  project = $(".item_detail_parent_name").innerText;
 
-  parentCandidate = sidebarCurrentEle;
-  while (parentCandidate.previousElementSibling) {
-    parentCandidate = parentCandidate.previousElementSibling;
-    if (parentCandidate.classList.contains(parentClass)) {
-      break;
-    }
-  }
-  return parentCandidate;
-}
+  link = clockifyButton.createButton({
+      description: description,
+      projectName: project
+  });
+  link.style.padding = "20px 25px 0px";
+  elem.insertBefore(link, elem.firstChild);
+});
 
-function isTopLevelProject(sidebarCurrentEle) {
-  return sidebarCurrentEle.classList.contains('indent_1');
-}
+// // filters
+clockifyButton.render('#agenda_view [data-action-hint="task-root"]:not(.clockify)', {observe: true}, function (elem) {
+  description = $('.markdown_content.task_content', elem).textContent;
+  project = $('.task_list_item__project', elem).textContent;
+  link = clockifyButton.createButton({
+      description: description,
+      projectName: project,
+      small: true
+  });
+  link.style.paddingRight = "10px";
+  elem.prepend(link);
+});
 
-function getProjectNameHierarchy(sidebarCurrentEle) {
-  var parentProjectEle, projectName;
-  projectName = $('.name', sidebarCurrentEle).firstChild.textContent.trim();
-  if (isTopLevelProject(sidebarCurrentEle)) {
-    return [projectName];
-  }
-  parentProjectEle = getParentEle(sidebarCurrentEle);
-  return [projectName].concat(getProjectNameHierarchy(parentProjectEle));
-}
+// // calendar
+clockifyButton.render('.upcoming_view__list [data-action-hint="task-root"]:not(.clockify)', {observe: true}, function (elem) {
+  description = $('.markdown_content.task_content', elem).textContent;
+  project = $('.task_list_item__project', elem).textContent;
+  link = clockifyButton.createButton({
+      description: description,
+      projectName: project,
+      small: true
+  });
+  link.style.paddingRight = "10px";
+  elem.prepend(link);
+});
 
-function projectWasJustCreated(projectId) {
-  return projectId.startsWith('_');
-}
-
-function getSidebarCurrentEle(elem) {
-  var editorInstance,
-      projectId,
-      sidebarRoot,
-      sidebarColorEle,
-      sidebarCurrentEle;
-  editorInstance = elem.closest('.project_editor_instance');
-  if (editorInstance) {
-    projectId = editorInstance.getAttribute('data-project-id');
-    sidebarRoot = $('#project_list');
-    if (projectWasJustCreated(projectId)) {
-      sidebarCurrentEle = $('.current', sidebarRoot);
-    } else {
-      sidebarColorEle = $('#project_color_' + projectId, sidebarRoot);
-      if (sidebarColorEle) {
-        sidebarCurrentEle = sidebarColorEle.closest('.menu_clickable');
-      }
-    }
-  }
-  return sidebarCurrentEle;
-}
-
-function getProjectNames(elem) {
-  var projectNames, viewingInbox, sidebarCurrentEle;
-  viewingInbox = $('#filter_inbox.current, #filter_team_inbox.current');
-  if (viewingInbox) {
-    projectNames = ['Inbox'];
-  } else {
-    sidebarCurrentEle = getSidebarCurrentEle(elem);
-    if (sidebarCurrentEle) {
-      projectNames = getProjectNameHierarchy(sidebarCurrentEle);
-    } else {
-      projectNames = [getProjectNameFromLabel(elem)];
-    }
-  }
-  return projectNames;
-}
-
-setTimeout(() => {
-  clockifyButton.render(
-      '.task_item .content:not(.clockify)',
-      { observe: true },
-      (elem) => {
-
-        let link,
-            description,
-            container = $('.task_item_details_bottom', elem),
-            projectNames = getProjectNames(elem),
-            project = projectNames.length > 0 ? projectNames[0] : "";
-
-        description = $('.task_item_content_text', elem).textContent;
-        link = clockifyButton.createSmallButton(description, project);
-        link.style.paddingTop = "0px";
-        link.style.paddingLeft = "0px";
-
-        container.insertBefore(link, container.firstChild);
-      }
-  );
-}, 1000);
-
-// task view
-clockifyButton.render('.item_detail:not(.clockify)', { observe: true }, elem => {
-  const container = elem.querySelector('.item_actions');
-
-  const descriptionSelector = () =>
-    elem.querySelector('.item_overview_content').firstChild.textContent;
-
-  function getParentIfProject (elem) {
-    const parent = elem.querySelector('.item_detail_parent_info');
-    let project = '';
-
-    if (parent.querySelector('circle, .item_detail_parent_icon__inbox_icon')) {
-      project = parent.querySelector('.item_detail_parent_name').textContent;
-    }
-
-    return project;
-  }
-  const project = getParentIfProject(elem);
-
-  const link = clockifyButton.createButton(descriptionSelector, project);
-
-  const wrapper = document.createElement('div');
-  wrapper.classList.add('item_action');
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
-  wrapper.style.justifyContent = 'center';
-  wrapper.appendChild(link);
-
-  if (container) {
-    container.insertBefore(wrapper, container.firstChild);
-  }
+// filters
+clockifyButton.render('.filter_view .task_list_item__body:not(.clockify)', {observe: true}, function (elem) {
+  description = $('.markdown_content.task_content', elem).textContent;
+  project = $('.task_list_item__project', elem).textContent;
+  link = clockifyButton.createButton({
+      description: description,
+      projectName: project,
+      small: true
+  });
+  link.style.paddingRight = "10px";
+  elem.prepend(link);
 });

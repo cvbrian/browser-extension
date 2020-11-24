@@ -1,9 +1,8 @@
 import * as React from "react";
-import ProjectList from "./project-list.component";
+import DefaultProjectList from "./default-project-list.component";
 import {getDefaultProjectEnums} from "../enums/default-project.enum";
 import {ProjectHelper} from "../helpers/project-helper";
 import {LocalStorageService} from "../services/localStorage-service";
-import {getLocalStorageEnums} from "../enums/local-storage.enum";
 
 const projectHelper = new ProjectHelper();
 const localStorageService = new LocalStorageService();
@@ -14,12 +13,14 @@ class DefaultProject extends React.Component {
         super(props);
 
         this.state = {
-            defaultProjectEnabled: false
+            defaultProjectEnabled: false,
+            defaultProjectForUserOnWorkspace: projectHelper.getDefaultProjectOfWorkspaceForUser()
         };
     }
 
     componentDidMount() {
         this.isDefaultProjectEnabled();
+        this.getDefaultProjectOfWorkspaceForUser();
     }
 
     isDefaultProjectEnabled() {
@@ -78,9 +79,13 @@ class DefaultProject extends React.Component {
         }
 
         this.setState({
-            defaultProjectEnabled: !this.state.defaultProjectEnabled
+            defaultProjectEnabled: !this.state.defaultProjectEnabled,
+            defaultProjectForUserOnWorkspace: projectHelper.getDefaultProjectOfWorkspaceForUser()
         }, () => {
-            this.projectList.setState({isOpen: !this.state.defaultProjectEnabled});
+            this.projectList.setState({
+                isOpen: false
+            });
+            this.projectList.mapSelectedProject()
         });
         this.props.changeSaved();
     }
@@ -97,46 +102,17 @@ class DefaultProject extends React.Component {
 
         defaultProjects.push(createdDefaultProject);
         projectHelper.setDefaultProjectsToStorage(defaultProjects);
-
     }
 
     setDefaultProject(defaultProject) {
-        const activeWorkspaceId = localStorageService.get('activeWorkspaceId');
-        const defaultProjects = projectHelper.getDefaultProjectListFromStorage();
-        const defaultProjectForWorkspaceAndUser = this.getDefaultProject();
-        const userId = localStorageService.get('userId');
-
-        if (defaultProjectForWorkspaceAndUser) {
-            const index = defaultProjects.findIndex(
-                (defaultProject) => defaultProject.project.id === defaultProjectForWorkspaceAndUser.id);
-            defaultProjects[index].project = defaultProject;
-        } else {
-            defaultProjects.push({
-                workspaceId: activeWorkspaceId,
-                userId: userId,
-                project: defaultProjects,
-                enabled: true
-            });
-        }
-
-        localStorageService.set(
-            getDefaultProjectEnums().DEFAULT_PROJECTS,
-            JSON.stringify(defaultProjects),
-            getLocalStorageEnums().PERMANENT_PREFIX
-        );
+        projectHelper.setDefaultProject(defaultProject)
         this.props.changeSaved();
     }
 
-    getDefaultProject() {
-        const defaultProjects = projectHelper.getDefaultProjectListFromStorage();
-        const activeWorkspaceId = localStorageService.get('activeWorkspaceId');
-        const userId = localStorageService.get('userId');
-
-        const defProject =
-            projectHelper.filterProjectsByWorkspaceAndUser(defaultProjects, activeWorkspaceId, userId);
-
-        return defProject && defProject.project && defProject.project.id ?
-            defProject.project : null;
+    getDefaultProjectOfWorkspaceForUser() {
+        this.setState({
+            defaultProjectForUserOnWorkspace: projectHelper.getDefaultProjectOfWorkspaceForUser()
+        })
     }
 
     projectListOpened() {
@@ -161,17 +137,14 @@ class DefaultProject extends React.Component {
                 </div>
                 <div id="defaultProject"
                      className="default-project__project-list expandContainer">
-                    <ProjectList
+                    <DefaultProjectList
                         ref={instance => {
                             this.projectList = instance
                         }}
-                        selectedProject={this.state.defaultProjectEnabled ?
-                            this.getDefaultProject().id : null}
+                        selectedProject={this.state.defaultProjectEnabled && this.state.defaultProjectForUserOnWorkspace ?
+                            this.state.defaultProjectForUserOnWorkspace.id : null}
                         selectProject={this.setDefaultProject.bind(this)}
-                        noTasks={true}
-                        defaultProject={true}
                         workspaceSettings={this.props.workspaceSettings}
-                        createProject={false}
                         projectListOpened={this.projectListOpened.bind(this)}
                     />
                 </div>

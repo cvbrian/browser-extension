@@ -1,13 +1,23 @@
-setTimeout(() => {
-  clockifyButton.render('.task__column.task__toolbar.task__toolbar_first:not(.clockify)', {observe: true}, function (elem) {
-    var link, description, project;
-    project = $("div.task-container__header.cu-hidden-print > cu-task-breadcrumbs > div > a:nth-child(4) > span").textContent;
-    link = clockifyButton.createButton(document.title, project);
-    link.style.display = "block";
-    link.style.paddingTop = "0";
-    link.style.paddingBottom = "0";
-    link.style.marginBottom = "10px";
-    link.style.cursor = 'pointer';
-    elem.appendChild(link);
+clockifyButton.render('.task-container__header:not(.clockify)', {observe: true}, function (elem) {
+  var projectSelector = 'cu-task-breadcrumbs > div > a.breadcrumbs__link.breadcrumbs__link_folder.ng-star-inserted > span',
+      tagSelector ='.task-container.ng-trigger.ng-trigger-loading div.cu-tags-select__name',
+      taskSelector = 'cu-task-breadcrumbs > div > a.breadcrumbs__link.breadcrumbs__link_last.breadcrumbs__link_list.ng-star-inserted > span';
+    
+  var link,
+    task = $(projectSelector) ? ($(taskSelector) ? $(taskSelector).textContent : "") : "",
+    project = $(projectSelector) ? $(projectSelector).textContent : ($(taskSelector) ? $(taskSelector).textContent : ""),
+    tags = $(tagSelector) ? () => [...new Set(Array.from($$(tagSelector)).map(e => e.innerText))] : "";
+
+  link = clockifyButton.createButton({
+    description: document.title,
+    projectName: project,
+    tagNames: tags,
+    taskName: task
   });
-}, 1000);
+
+  link.style.display = "inline-flex";
+  link.style.paddingLeft = "10px";
+  link.style.cursor = 'pointer';
+
+  elem.appendChild(link);
+});

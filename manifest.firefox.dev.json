@@ -16,7 +16,6 @@
       "contentScripts/notification-background.js",
       "contentScripts/reminder-background.js",
       "contentScripts/pomodoro-background.js",
-      "contentScripts/workspace-httpRequests-background.js",
       "contentScripts/project-httpRequests-background.js"
     ]
   },
@@ -26,7 +25,7 @@
       "strict_min_version": "57.0a1"
     }
   },
-  "version": "1.8.9",
+  "version": "1.8.53",
   "browser_action": {
     "default_popup": "index.html",
     "default_title": "Clockify"
@@ -57,17 +56,18 @@
     "128":"assets/images/logo-128.png"
   },
   "permissions": [
+    "background",
     "contextMenus",
-    "https://clockify.me/api/*",
+    "*://*.clockify.me/*",
+    "*://*/",
     "storage",
     "tabs",
     "webNavigation",
     "activeTab",
-    "<all_urls>",
     "identity",
-    "https://accounts.google.com/*",
     "idle",
     "notifications"
   ],
+  "optional_permissions": ["*://*/"],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
