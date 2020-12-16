@@ -35,12 +35,12 @@ clockifyButton.render(
     };
     console.log(getProject);
 
-    const link = clockifyButton.createButton(getDescription);
+    const link = clockifyButton.createButton(getDescription, getProject);
     link.style.cursor = 'pointer';
     elem.style.position = 'relative';
 
-    var link = clockifyButton.createButton(elem.textContent.trim());
-        link.style.cursor = "pointer";
+    // var link = clockifyButton.createButton(elem.textContent.trim());
+    //     link.style.cursor = "pointer";
         link.style.fontSize = "14px";
         link.style.fontWeight = "400";
         link.style.width = "134px";
