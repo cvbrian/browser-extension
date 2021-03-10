@@ -4,8 +4,10 @@ clockifyButton.render(
   '.notion-peek-renderer:not(.clockify)',
   { observe: true },
   function (elem) {
+    const project = document.title;
+    const description = elem.querySelector('.notion-scroller .notion-selectable div[contenteditable="true"]').textContent.trim();
 
-    var link = clockifyButton.createButton(elem.querySelector('.notion-scroller .notion-selectable div[contenteditable="true"]').textContent.trim());
+    var link = clockifyButton.createButton(description, project);
     // link.style.cursor = "pointer";
     link.style.fontSize = "12px";
 
