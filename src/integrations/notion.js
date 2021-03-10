@@ -22,6 +22,7 @@ clockifyButton.render(
   }
 );
 
+
 // Button renders left of page title - hidden on popups with css
 clockifyButton.render(
   '.notion-page-controls + div:not(.clockify)',
